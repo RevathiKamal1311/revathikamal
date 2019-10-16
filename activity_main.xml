@@ -7,14 +7,14 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/Reg"
+        android:id="@+id/txt1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="40dp"
         android:ems="10"
         android:gravity="center"
-        android:text="USER REGISTRATION"
+        android:text="WORK STATUS"
         android:textColor="#0c0c0c"
         android:textSize="30sp" />
     <EditText
@@ -24,9 +24,9 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPersonName"
-        android:hint="enter Username"
+        android:hint="Enter user name"
         android:textColor="#000"
-        android:layout_below="@id/Reg"
+        android:layout_below="@id/txt1"
         android:layout_centerHorizontal="true"
         android:layout_margin="20dp"
         android:gravity="center"/>
@@ -37,59 +37,35 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPersonName"
-        android:hint="enter name"
+        android:hint="enter your location"
         android:textColor="#000"
         android:layout_below="@id/edit1"
         android:layout_centerHorizontal="true"
         android:layout_margin="20dp"
         android:gravity="center"/>
+    <EditText
 
-  <EditText
-       android:id="@+id/edit3"
-       android:layout_width="wrap_content"
-       android:layout_height="wrap_content"
+        android:id="@+id/edit3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPersonName"
-        android:hint="enter date of birth"
+        android:hint="enter your issue"
         android:textColor="#000"
         android:layout_below="@id/edit2"
         android:layout_centerHorizontal="true"
         android:layout_margin="20dp"
         android:gravity="center"/>
-
     <EditText
+
         android:id="@+id/edit4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPersonName"
-        android:hint="enter Email"
+        android:hint="enter status of work"
         android:textColor="#000"
         android:layout_below="@id/edit3"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="20dp"
-        android:gravity="center"/>
-    <EditText
-        android:id="@+id/edit5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:hint="enter your address"
-        android:textColor="#000"
-        android:layout_below="@id/edit4"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="20dp"
-        android:gravity="center"/>
-    <EditText
-        android:id="@+id/edit6"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:hint="enter your password"
-        android:textColor="#000"
-        android:layout_below="@id/edit5"
         android:layout_centerHorizontal="true"
         android:layout_margin="20dp"
         android:gravity="center"/>
@@ -97,10 +73,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/btn1"
-        android:layout_below="@id/edit6"
+        android:layout_below="@id/edit4"
         android:layout_marginTop="20dp"
         android:gravity="center"
         android:background="@android:color/transparent"
-        android:text="REGISTER"/>
+        android:text="SUBMIT"/>
+
+
+
 
 </RelativeLayout>
