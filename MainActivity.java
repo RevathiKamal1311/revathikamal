@@ -1,243 +1,157 @@
-package com.example.ereg;
+package com.example.locations;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.Context;
-import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.annotation.TargetApi;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity
-{
-    EditText Email, Password, Name,Age,passwordd ;
-    Button Register;
-    String NameHolder, EmailHolder,AgeHolder, PasswordHolder,PassworddHolder;
-    String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
-    Boolean EditTextEmptyHolder,f,g;
-    SQLiteDatabase sqLiteDatabaseObj;
-    String SQLiteDataBaseQueryHolder ;
-    SQLiteHelper sqLiteHelper;
-    Cursor cursor;
-    String F_Result = "Not_Found";
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+
+public class MainActivity extends AppCompatActivity {
+
+
+    private ArrayList permissionsToRequest;
+    private ArrayList permissionsRejected = new ArrayList();
+    private ArrayList permissions = new ArrayList();
+
+    private final static int ALL_PERMISSIONS_RESULT = 101;
+    LocationTrack locationTrack;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-     Register = (Button)findViewById(R.id.button);
 
-      Email = (EditText)findViewById(R.id.editText3);
-       Password = (EditText)findViewById(R.id.editText4);
-       passwordd=(EditText)findViewById(R.id.editText5);
-       Name = (EditText)findViewById(R.id.editText);
-       Age=(EditText)findViewById(R.id.editText2) ;
+        permissions.add(ACCESS_FINE_LOCATION);
+        permissions.add(ACCESS_COARSE_LOCATION);
+
+        permissionsToRequest = findUnAskedPermissions(permissions);
+        //get the permissions we have asked for before but are not granted..
+        //we will store this in a global list to access later.
 
 
-        sqLiteHelper = new SQLiteHelper(this);
-        Register.setOnClickListener(new View.OnClickListener() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+
+            if (permissionsToRequest.size() > 0)
+                requestPermissions((String[]) permissionsToRequest.toArray(new String[permissionsToRequest.size()]), ALL_PERMISSIONS_RESULT);
+        }
+
+
+        Button btn = (Button) findViewById(R.id.btn);
+
+
+        btn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                // Creating SQLite database if dose n't exists
-                SQLiteDataBaseBuild();
+            public void onClick(View view) {
 
-                // Creating SQLite table if dose n't exists.
-                SQLiteTableBuild();
-
-                // Checking EditText is empty or Not.
-                CheckEditTextStatus();
-                CheckEmailValidation();
-
-                passwordvalidation();
-
-                // Method to check Email is already exists or not.
-                CheckingEmailAlreadyExistsOrNot();
+                locationTrack = new LocationTrack(MainActivity.this);
 
 
-                // Empty EditText After done inserting process.
-                // EmptyEditTextAfterDataInsert();
+                if (locationTrack.canGetLocation()) {
 
+
+                    double longitude = locationTrack.getLongitude();
+                    double latitude = locationTrack.getLatitude();
+
+                    Toast.makeText(getApplicationContext(), "Longitude:" + Double.toString(longitude) + "\nLatitude:" + Double.toString(latitude), Toast.LENGTH_SHORT).show();
+                } else {
+
+                    locationTrack.showSettingsAlert();
+                }
 
             }
         });
 
     }
 
-    // SQLite database build method.
-    public void SQLiteDataBaseBuild(){
 
-        sqLiteDatabaseObj = openOrCreateDatabase(SQLiteHelper.DATABASE_NAME, Context.MODE_PRIVATE, null);
+    private ArrayList findUnAskedPermissions(ArrayList wanted) {
+        ArrayList result = new ArrayList();
 
-    }
-
-
-    // SQLite table build method.
-    public void SQLiteTableBuild() {
-
-        sqLiteDatabaseObj.execSQL("CREATE TABLE IF NOT EXISTS " + SQLiteHelper.TABLE_NAME + "(" + SQLiteHelper.Table_Column_ID + " INTEGER, " + SQLiteHelper.Table_Column_1_Name + " VARCHAR, " + SQLiteHelper.Table_Column_2_Email + " VARCHAR, "+ SQLiteHelper.Table_Column_3_Age + " INTEGER, " + SQLiteHelper.Table_Column_4_Password + " VARCHAR,"+ SQLiteHelper.Table_Column_5_Type + " INTEGER );");
-
-    }
-
-    // Insert data into SQLite database method.
-    public void InsertDataIntoSQLiteDatabase(){
-
-        // If editText is not empty then this block will executed.
-        if((EditTextEmptyHolder == true)&&(f)&&(g))
-        {
-
-            // SQLite query to insert data into table.
-            SQLiteDataBaseQueryHolder = "INSERT INTO "+SQLiteHelper.TABLE_NAME+" (name,email,age,password) VALUES('"+NameHolder+"', '"+EmailHolder+"','"+AgeHolder+"', '"+PasswordHolder+"');";
-
-            // Executing query.
-            sqLiteDatabaseObj.execSQL(SQLiteDataBaseQueryHolder);
-
-            // Closing SQLite database object.
-            sqLiteDatabaseObj.close();
-
-            // Printing toast message after done inserting.
-            Toast.makeText(MainActivity.this,"User Registered Successfully", Toast.LENGTH_LONG).show();
-            Intent intent = new Intent(MainActivity.this, Login.class);
-            startActivity(intent);
-
-        }
-        // This block will execute if any of the registration EditText is empty.
-        else {
-            if(EditTextEmptyHolder==false)
-            {
-
-                // Printing toast message if any of EditText is empty.
-                Toast.makeText(MainActivity.this,"Please Fill All The Required Fields.", Toast.LENGTH_LONG).show();
-
-            }
-            else if(f==false)
-            {
-                Toast.makeText(MainActivity.this,"Invalid email.", Toast.LENGTH_LONG).show();
-            }
-            else
-            {
-                Toast.makeText(MainActivity.this," Password Mismatch.", Toast.LENGTH_LONG).show();
+        for (Object perm : wanted) {
+            if (!hasPermission((String) perm)) {
+                result.add(perm);
             }
         }
 
-
+        return result;
     }
 
-    // Empty edittext after done inserting process method.
-//    public void EmptyEditTextAfterDataInsert(){
-//
-//        Name.getText().clear();
-//
-//        Email.getText().clear();
-//        Age.getText().clear();
-//
-//        Password.getText().clear();
-//        passwordd.getText().clear();
-//
-//    }
-
-    // Method to check EditText is empty or Not.
-    public void CheckEditTextStatus(){
-
-        // Getting value from All EditText and storing into String Variables.
-        NameHolder = Name.getText().toString() ;
-        EmailHolder = Email.getText().toString();
-        AgeHolder=Age.getText().toString();
-        PasswordHolder = Password.getText().toString();
-        PassworddHolder=passwordd.getText().toString();
-
-
-
-        if(TextUtils.isEmpty(NameHolder) || TextUtils.isEmpty(EmailHolder) || TextUtils.isEmpty(AgeHolder)|| TextUtils.isEmpty(PasswordHolder)|| TextUtils.isEmpty(PassworddHolder)){
-
-            EditTextEmptyHolder = false ;
-
-        }
-        else {
-
-            EditTextEmptyHolder = true ;
-        }
-    }
-
-    // Checking Email is already exists or not.
-    public void CheckingEmailAlreadyExistsOrNot(){
-
-        // Opening SQLite database write permission.
-        sqLiteDatabaseObj = sqLiteHelper.getWritableDatabase();
-
-        // Adding search email query to cursor.
-        cursor = sqLiteDatabaseObj.query(SQLiteHelper.TABLE_NAME, null, " " + SQLiteHelper.Table_Column_2_Email + "=?", new String[]{EmailHolder}, null, null, null);
-
-        while (cursor.moveToNext()) {
-
-            if (cursor.isFirst()) {
-
-                cursor.moveToFirst();
-
-                // If Email is already exists then Result variable value set as Email Found.
-                F_Result = "Email Found";
-
-                // Closing cursor.
-                cursor.close();
+    private boolean hasPermission(String permission) {
+        if (canMakeSmores()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                return (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED);
             }
         }
+        return true;
+    }
 
-        // Calling method to check final result and insert data into SQLite database.
-        CheckFinalResult();
-
+    private boolean canMakeSmores() {
+        return (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1);
     }
 
 
-    // Checking result
-    public void CheckFinalResult(){
+    @TargetApi(Build.VERSION_CODES.M)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 
-        // Checking whether email is already exists or not.
-        if(F_Result.equalsIgnoreCase("Email Found"))
-        {
+        switch (requestCode) {
 
-            // If email is exists then toast msg will display.
-            Toast.makeText(MainActivity.this,"Email Already Exists",Toast.LENGTH_LONG).show();
+            case ALL_PERMISSIONS_RESULT:
+                for (Object perms : permissionsToRequest) {
+                    if (!hasPermission((String) perms)) {
+                        permissionsRejected.add(perms);
+                    }
+                }
 
+                if (permissionsRejected.size() > 0) {
+
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (shouldShowRequestPermissionRationale((String) permissionsRejected.get(0))) {
+                            showMessageOKCancel("These permissions are mandatory for the application. Please allow access.",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                                requestPermissions((String[]) permissionsRejected.toArray(new String[permissionsRejected.size()]), ALL_PERMISSIONS_RESULT);
+                                            }
+                                        }
+                                    });
+                            return;
+                        }
+                    }
+
+                }
+
+                break;
         }
-        else {
-
-            // If email already dose n't exists then user registration details will entered to SQLite database.
-            InsertDataIntoSQLiteDatabase();
-
-        }
-
-        F_Result = "Not_Found" ;
 
     }
-    public void CheckEmailValidation()
-    {
-        if (EmailHolder.matches(emailPattern))
-        {
-            f=true;
-        }
-        else
-        {
-            f=false;
 
-
-        }
-    }
-    public void passwordvalidation()
-    {
-
-        if(PasswordHolder.equals(PassworddHolder))
-        {
-            g=true;
-        }
-        else
-        {
-            g=false;
-        }
+    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
+        new AlertDialog.Builder(MainActivity.this)
+                .setMessage(message)
+                .setPositiveButton("OK", okListener)
+                .setNegativeButton("Cancel", null)
+                .create()
+                .show();
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        locationTrack.stopListener();
+    }
 }
-
